@@ -22,6 +22,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec/heze"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -36,7 +37,7 @@ type VersionedSignedBeaconBlock struct {
 	Electra   *electra.SignedBeaconBlock
 	Fulu      *electra.SignedBeaconBlock
 	Gloas     *gloas.SignedBeaconBlock
-	Heze      *gloas.SignedBeaconBlock
+	Heze      *heze.SignedBeaconBlock
 }
 
 // Slot returns the slot of the signed beacon block.
@@ -216,15 +217,12 @@ func (v *VersionedSignedBeaconBlock) ExecutionBlockHash() (phase0.Hash32, error)
 
 		return v.Gloas.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
 	case DataVersionHeze:
-		if v.Heze == nil ||
-			v.Heze.Message == nil ||
-			v.Heze.Message.Body == nil ||
-			v.Heze.Message.Body.SignedExecutionPayloadBid == nil ||
-			v.Heze.Message.Body.SignedExecutionPayloadBid.Message == nil {
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil ||
+			v.Heze.Message.Body.ExecutionPayload == nil {
 			return phase0.Hash32{}, errors.New("no heze block")
 		}
 
-		return v.Heze.Message.Body.SignedExecutionPayloadBid.Message.BlockHash, nil
+		return v.Heze.Message.Body.ExecutionPayload.BlockHash, nil
 	default:
 		return phase0.Hash32{}, errors.New("unknown version")
 	}
@@ -1422,13 +1420,11 @@ func (v *VersionedSignedBeaconBlock) BlobKZGCommitments() ([]deneb.KZGCommitment
 
 		return v.Gloas.Message.Body.SignedExecutionPayloadBid.Message.BlobKZGCommitments, nil
 	case DataVersionHeze:
-		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil ||
-			v.Heze.Message.Body.SignedExecutionPayloadBid == nil ||
-			v.Heze.Message.Body.SignedExecutionPayloadBid.Message == nil {
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
 			return nil, errors.New("no heze block")
 		}
 
-		return v.Heze.Message.Body.SignedExecutionPayloadBid.Message.BlobKZGCommitments, nil
+		return v.Heze.Message.Body.BlobKZGCommitments, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1470,7 +1466,14 @@ func (v *VersionedSignedBeaconBlock) ExecutionRequests() (*VersionedExecutionReq
 	case DataVersionGloas:
 		return nil, errors.New("no execution requests for gloas block")
 	case DataVersionHeze:
-		return nil, errors.New("no execution requests for heze block")
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
+		}
+
+		return &VersionedExecutionRequests{
+			Version: DataVersionHeze,
+			Heze:    v.Heze.Message.Body.ExecutionRequests,
+		}, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1503,14 +1506,7 @@ func (v *VersionedSignedBeaconBlock) SignedExecutionPayloadBid() (*VersionedSign
 			Gloas:   v.Gloas.Message.Body.SignedExecutionPayloadBid,
 		}, nil
 	case DataVersionHeze:
-		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
-			return nil, errors.New("no heze block")
-		}
-
-		return &VersionedSignedExecutionPayloadBid{
-			Version: DataVersionHeze,
-			Heze:    v.Heze.Message.Body.SignedExecutionPayloadBid,
-		}, nil
+		return nil, errors.New("no signed execution payload bid in heze")
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -1560,7 +1556,11 @@ func (v *VersionedSignedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayl
 	case DataVersionGloas:
 		return nil, errors.New("no execution payload in gloas")
 	case DataVersionHeze:
-		return nil, errors.New("no execution payload in heze")
+		if v.Heze == nil || v.Heze.Message == nil || v.Heze.Message.Body == nil {
+			return nil, errors.New("no heze block")
+		}
+
+		versionedExecutionPayload.Heze = v.Heze.Message.Body.ExecutionPayload
 	default:
 		return nil, errors.New("unknown version")
 	}

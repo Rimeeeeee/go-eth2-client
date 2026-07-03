@@ -3,13 +3,13 @@ package spec
 import (
 	"testing"
 
-	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec/heze"
 )
 
 func TestVersionedSignedBeaconBlockIsEmptyWithHeze(t *testing.T) {
 	block := &VersionedSignedBeaconBlock{
 		Version: DataVersionHeze,
-		Heze:    &gloas.SignedBeaconBlock{},
+		Heze:    &heze.SignedBeaconBlock{},
 	}
 
 	if block.IsEmpty() {

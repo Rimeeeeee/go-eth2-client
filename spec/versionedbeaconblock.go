@@ -22,6 +22,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
 	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec/heze"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -36,7 +37,7 @@ type VersionedBeaconBlock struct {
 	Electra   *electra.BeaconBlock
 	Fulu      *electra.BeaconBlock
 	Gloas     *gloas.BeaconBlock
-	Heze      *gloas.BeaconBlock
+	Heze      *heze.BeaconBlock
 }
 
 // IsEmpty returns true if there is no block.
@@ -1000,14 +1001,7 @@ func (v *VersionedBeaconBlock) SignedExecutionPayloadBid() (*VersionedSignedExec
 			Gloas:   v.Gloas.Body.SignedExecutionPayloadBid,
 		}, nil
 	case DataVersionHeze:
-		if v.Heze == nil || v.Heze.Body == nil {
-			return nil, errors.New("no heze block")
-		}
-
-		return &VersionedSignedExecutionPayloadBid{
-			Version: DataVersionHeze,
-			Heze:    v.Heze.Body.SignedExecutionPayloadBid,
-		}, nil
+		return nil, errors.New("no signed execution payload bid in heze")
 
 	default:
 		return nil, errors.New("unknown version")
@@ -1058,7 +1052,11 @@ func (v *VersionedBeaconBlock) ExecutionPayload() (*VersionedExecutionPayload, e
 	case DataVersionGloas:
 		return nil, errors.New("no execution payload in gloas")
 	case DataVersionHeze:
-		return nil, errors.New("no execution payload in heze")
+		if v.Heze == nil || v.Heze.Body == nil {
+			return nil, errors.New("no heze block")
+		}
+
+		versionedExecutionPayload.Heze = v.Heze.Body.ExecutionPayload
 	default:
 		return nil, errors.New("unknown version")
 	}
