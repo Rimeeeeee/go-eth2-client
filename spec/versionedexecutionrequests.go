@@ -28,7 +28,7 @@ type VersionedExecutionRequests struct {
 	Electra *electra.ExecutionRequests
 	Fulu    *electra.ExecutionRequests
 	Gloas   *gloas.ExecutionRequests
-	Heze    *gloas.ExecutionRequests
+	Heze    *electra.ExecutionRequests
 }
 
 // IsEmpty returns true if no fork-specific execution requests are populated.
@@ -142,7 +142,7 @@ func (v *VersionedExecutionRequests) Consolidations() ([]*electra.ConsolidationR
 func (v *VersionedExecutionRequests) BuilderDeposits() ([]*gloas.BuilderDepositRequest, error) {
 	switch v.Version {
 	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb,
-		DataVersionElectra, DataVersionFulu:
+		DataVersionElectra, DataVersionFulu, DataVersionHeze:
 		return nil, errors.New("builder deposit requests are not present before gloas")
 	case DataVersionGloas:
 		if v.Gloas == nil {
@@ -150,12 +150,7 @@ func (v *VersionedExecutionRequests) BuilderDeposits() ([]*gloas.BuilderDepositR
 		}
 
 		return v.Gloas.BuilderDeposits, nil
-	case DataVersionHeze:
-		if v.Heze == nil {
-			return nil, errors.New("no heze execution requests")
-		}
 
-		return v.Heze.BuilderDeposits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}
@@ -165,7 +160,7 @@ func (v *VersionedExecutionRequests) BuilderDeposits() ([]*gloas.BuilderDepositR
 func (v *VersionedExecutionRequests) BuilderExits() ([]*gloas.BuilderExitRequest, error) {
 	switch v.Version {
 	case DataVersionPhase0, DataVersionAltair, DataVersionBellatrix, DataVersionCapella, DataVersionDeneb,
-		DataVersionElectra, DataVersionFulu:
+		DataVersionElectra, DataVersionFulu, DataVersionHeze:
 		return nil, errors.New("builder exit requests are not present before gloas")
 	case DataVersionGloas:
 		if v.Gloas == nil {
@@ -173,12 +168,7 @@ func (v *VersionedExecutionRequests) BuilderExits() ([]*gloas.BuilderExitRequest
 		}
 
 		return v.Gloas.BuilderExits, nil
-	case DataVersionHeze:
-		if v.Heze == nil {
-			return nil, errors.New("no heze execution requests")
-		}
 
-		return v.Heze.BuilderExits, nil
 	default:
 		return nil, errors.New("unknown version")
 	}

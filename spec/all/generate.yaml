@@ -25,6 +25,7 @@ types:
       - ../deneb.BeaconBlockBody
       - ../electra.BeaconBlockBody
       - ../gloas.BeaconBlockBody
+      - ../heze.BeaconBlockBody
 
   - name: BeaconBlock
     output: beaconblock_ssz.go
@@ -37,6 +38,7 @@ types:
       - ../deneb.BeaconBlock
       - ../electra.BeaconBlock
       - ../gloas.BeaconBlock
+      - ../heze.BeaconBlock
 
   - name: SignedBeaconBlock
     output: signedbeaconblock_ssz.go
@@ -49,6 +51,7 @@ types:
       - ../deneb.SignedBeaconBlock
       - ../electra.SignedBeaconBlock
       - ../gloas.SignedBeaconBlock
+      - ../heze.SignedBeaconBlock
 
   - name: ExecutionPayload
     output: executionpayload_ssz.go
